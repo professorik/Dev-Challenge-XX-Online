@@ -1,0 +1,22 @@
+services:
+  mongodb:
+    restart: always
+    image: 'mongo:latest'
+    container_name: "mongodb"
+    environment:
+      - 'MONGO_INITDB_DATABASE=mydatabase'
+    ports:
+      - 27017:27017
+  client-backend:
+    image: client
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    depends_on:
+      - mongodb
+    environment:
+      - SERVER_PORT= 8080
+    links:
+      - mongodb

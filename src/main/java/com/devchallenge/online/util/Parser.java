@@ -65,8 +65,7 @@ public class Parser {
         return token.equalsIgnoreCase("sum") ||
                 token.equalsIgnoreCase("avg") ||
                 token.equalsIgnoreCase("min") ||
-                token.equalsIgnoreCase("max") ||
-                token.equalsIgnoreCase("sin");
+                token.equalsIgnoreCase("max");
     }
 
     private static List<String> shuntingYard(String[] tokens) throws InvalidFormulaException {
@@ -215,7 +214,6 @@ public class Parser {
                     result = Math.max(result, args.pop());
                 }
             }
-            case "sin" -> result = Math.sin(args.pop());
         }
         return result;
     }

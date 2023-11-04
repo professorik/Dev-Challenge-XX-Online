@@ -49,10 +49,8 @@ public class HttpManager {
                 CellDto cell = mapper.readValue(response.toString(), CellDto.class);
                 return cell.getResult();
             } catch (IOException e) {
-                e.printStackTrace();
+                return "0";
             }
-        } else {
-            throw new Exception("not found");
         }
         return "0";
     }

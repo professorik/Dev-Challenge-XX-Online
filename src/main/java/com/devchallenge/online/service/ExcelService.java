@@ -27,6 +27,7 @@ public class ExcelService {
     }
 
     public Cell setCell(String sheetId, String cellId, String expression) throws Exception {
+        System.out.println(sheetId + " " + cellId + " " + expression);
         if (expression.charAt(0) != '=') {
             var startCell = new Cell(new CellId(sheetId, cellId), expression, expression, List.of());
             cellRepository.saveAll(getUpdatedCells(startCell));
@@ -35,6 +36,7 @@ public class ExcelService {
         var processedExpression = expression.replaceAll("\\s", "");
 
         var variables = Parser.getVariables(processedExpression);
+        System.out.println(variables);
         if (variables.contains(cellId)) {
             throw new CyclicDependencyException();
         }
@@ -50,7 +52,7 @@ public class ExcelService {
         var res = Parser.evaluate(processedExpression, values);
 
         var startCell = new Cell(new CellId(sheetId, cellId), expression, res, new ArrayList<>(variables));
-        cellRepository.saveAll(getUpdatedCells(startCell));
+        //FIXME: cellRepository.saveAll(getUpdatedCells(startCell));
         return startCell;
     }
 

@@ -17,7 +17,7 @@ class ExcelApplicationTests {
 	}
 
 	@Test
-	void parserTest() {
+	void parserTest() throws Exception {
 		Map<String, Double> values = new HashMap<>();
 		values.put("a", 5.0);
 		values.put("b", 5.0);

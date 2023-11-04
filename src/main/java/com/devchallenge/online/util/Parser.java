@@ -3,10 +3,13 @@ package com.devchallenge.online.util;
 import com.devchallenge.online.dto.exceptions.InvalidFormulaException;
 
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class Parser {
 
-    private static final String regex = "(?<=[-+*/(),])|(?=[-+*/(),])";
+    private static final String externalRefRegex = "(EXTERNAL_REF\\(.*?\\))";
+    private static final String regex = externalRefRegex + "|(?<=[-+*/(),])|(?=[-+*/(),])";
     private static final String varNameRegex = "^[a-zA-Z_$][\\w$]*$";
 
     public static Set<String> getVariables(String expression) {
@@ -20,8 +23,10 @@ public class Parser {
         return result;
     }
 
-    public static String evaluate(String expression, Map<String, Double> values) throws ArithmeticException, InvalidFormulaException {
+    public static String evaluate(String expression, Map<String, Double> values) throws Exception {
         var expr = expression.charAt(0) == '=' ? expression.substring(1) : expression;
+        expr = getExternals(expr);
+
         List<String> output = shuntingYard(expr.split(regex));
         Stack<Double> result = new Stack<>();
         for (String token : output) {
@@ -45,6 +50,15 @@ public class Parser {
             result.push(value);
         }
         return String.valueOf(result.peek());
+    }
+
+    private static String getExternals(String expression) throws Exception {
+        Matcher m = Pattern.compile(externalRefRegex).matcher(expression);
+        while (m.find()) {
+            String ref = m.group().substring(13, m.group().length() - 1);
+            expression = expression.replaceFirst(externalRefRegex, "(" + HttpManager.get(ref) + ")");
+        }
+        return expression;
     }
 
     private static boolean isFunction(String token) {

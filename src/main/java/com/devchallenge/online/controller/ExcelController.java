@@ -23,22 +23,15 @@ public class ExcelController {
     @Autowired
     private ModelMapper modelMapper;
 
-    //FIXME: ok -> created on post
-
-    @PostMapping("/test")
-    public ResponseEntity<?> test(@RequestBody CellDto test){
-        System.out.println(test);
-        return ResponseEntity.ok().build();
-    }
 
     @PostMapping("/{sheet_id}/{cell_id}/subscribe")
     public ResponseEntity<?> setCell(@PathVariable("sheet_id") String sheetId, @PathVariable("cell_id") String cellId, @RequestBody WebHookDto url){
         try {
              service.setWebHook(sheetId, cellId, url.getWebhook_url());
         } catch (Exception e) {
-            return ResponseEntity.notFound().build();
+            return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).build();
         }
-        return ResponseEntity.ok(url);
+        return ResponseEntity.status(HttpStatus.CREATED).body(url);
     }
 
     @PostMapping("/{sheet_id}/{cell_id}")
@@ -47,9 +40,9 @@ public class ExcelController {
         try {
             result = modelMapper.map(service.setCell(sheetId, cellId, cellValue.getValue()), CellDto.class);
         } catch (Exception e) {
-            return ResponseEntity.ok(new CellDto(cellValue.getValue(), "ERROR"));
+            return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(new CellDto(cellValue.getValue(), "ERROR"));
         }
-        return ResponseEntity.ok(result);
+        return ResponseEntity.status(HttpStatus.CREATED).body(result);
     }
 
     @GetMapping("/{sheet_id}/{cell_id}")

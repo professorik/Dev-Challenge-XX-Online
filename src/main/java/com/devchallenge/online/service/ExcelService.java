@@ -7,16 +7,32 @@ import com.devchallenge.online.model.*;
 import com.devchallenge.online.repository.CellRepository;
 import com.devchallenge.online.util.*;
 import lombok.NonNull;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.io.BufferedReader;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.*;
 
 @Service
 public class ExcelService {
 
     @Autowired
+    private ModelMapper modelMapper;
+
+    @Autowired
     private CellRepository cellRepository;
+
+    public void setWebHook(String sheetId, String cellId, String webhookUrl) throws NoSuchElementException {
+        var cell = cellRepository.findById(new CellId(sheetId, cellId)).orElseThrow();
+        cell.setWebhookUrl(webhookUrl);
+        cellRepository.save(cell);
+    }
 
     public List<Cell> getSheet(String sheetId) {
         return cellRepository.findAllById_SheetId(sheetId);
@@ -30,13 +46,25 @@ public class ExcelService {
         System.out.println(sheetId + " " + cellId + " " + expression);
         if (expression.charAt(0) != '=') {
             var startCell = new Cell(new CellId(sheetId, cellId), expression, expression, List.of());
-            cellRepository.saveAll(getUpdatedCells(startCell));
+            var cells = getUpdatedCells(startCell);
+            emitWebHooks(cells);
+            cellRepository.saveAll(cells);
             return startCell;
         }
         var processedExpression = expression.replaceAll("\\s", "");
 
         var variables = Parser.getVariables(processedExpression);
-        System.out.println(variables);
+        Map<String, Double> values = getValues(variables, sheetId, cellId);
+        var res = Parser.evaluate(processedExpression, values);
+
+        var startCell = new Cell(new CellId(sheetId, cellId), expression, res, new ArrayList<>(variables));
+        var cells = getUpdatedCells(startCell);
+        emitWebHooks(cells);
+        cellRepository.saveAll(cells);
+        return startCell;
+    }
+
+    private Map<String, Double> getValues(Set<String> variables, String sheetId, String cellId) throws CyclicDependencyException {
         if (variables.contains(cellId)) {
             throw new CyclicDependencyException();
         }
@@ -48,12 +76,7 @@ public class ExcelService {
         if (hasCyclicDependency(cellId, cells, sheetId)) {
             throw new CyclicDependencyException();
         }
-        Map<String, Double> values = convert(cells);
-        var res = Parser.evaluate(processedExpression, values);
-
-        var startCell = new Cell(new CellId(sheetId, cellId), expression, res, new ArrayList<>(variables));
-        //FIXME: cellRepository.saveAll(getUpdatedCells(startCell));
-        return startCell;
+        return convert(cells);
     }
 
     private boolean hasCyclicDependency(String cellId, List<Cell> cells, String sheetId) {
@@ -135,5 +158,33 @@ public class ExcelService {
             }
         }
         return values;
+    }
+
+    private void emitWebHooks(List<Cell> cells) {
+        for (Cell cell: cells) {
+            String url = cell.getWebhookUrl();
+            if (url.isBlank()) continue;
+            String json = modelMapper.map(cell, CellDto.class).toString();
+            try {
+                post(url, json);
+            } catch (IOException ignored) {}
+        }
+    }
+
+    private void post(String url, String data) throws IOException {
+        URL obj = new URL(url);
+        HttpURLConnection con = (HttpURLConnection) obj.openConnection();
+
+        con.setRequestMethod("POST");
+        con.setRequestProperty("Content-Type", "application/json");
+        con.setDoOutput(true);
+
+        DataOutputStream wr = new DataOutputStream(con.getOutputStream());
+        wr.writeBytes(data);
+        wr.flush();
+        wr.close();
+
+        BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
+        in.close();
     }
 }

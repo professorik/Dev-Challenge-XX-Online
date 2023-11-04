@@ -23,6 +23,24 @@ public class ExcelController {
     @Autowired
     private ModelMapper modelMapper;
 
+    //FIXME: ok -> created on post
+
+    @PostMapping("/test")
+    public ResponseEntity<?> test(@RequestBody CellDto test){
+        System.out.println(test);
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/{sheet_id}/{cell_id}/subscribe")
+    public ResponseEntity<?> setCell(@PathVariable("sheet_id") String sheetId, @PathVariable("cell_id") String cellId, @RequestBody WebHookDto url){
+        try {
+             service.setWebHook(sheetId, cellId, url.getWebhook_url());
+        } catch (Exception e) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(url);
+    }
+
     @PostMapping("/{sheet_id}/{cell_id}")
     public ResponseEntity<?> setCell(@PathVariable("sheet_id") String sheetId, @PathVariable("cell_id") String cellId, @RequestBody CellValueDto cellValue){
         CellDto result;

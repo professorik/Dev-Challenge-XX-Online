@@ -25,7 +25,6 @@ public class Parser {
         List<String> output = shuntingYard(expr.split(regex));
         Stack<Double> result = new Stack<>();
         for (String token : output) {
-            System.out.println(result + " " + token);
             if (isFunction(token)) {
                 result.push(calculate(token, result));
                 continue;
@@ -57,8 +56,6 @@ public class Parser {
     }
 
     private static List<String> shuntingYard(String[] tokens) throws InvalidFormulaException {
-        System.out.println(Arrays.toString(tokens));
-
         Stack<String> stack = new Stack<>();
         Stack<Boolean> prev = new Stack<>();
         Stack<Integer> argAmount = new Stack<>();
@@ -114,7 +111,6 @@ public class Parser {
                     }
                     output.add(String.valueOf(a));
                     output.add(f);
-                    System.out.println(a + " " + f + " " + output + " " + stack);
                 }
                 unary = false;
             } else {
@@ -132,7 +128,6 @@ public class Parser {
             }
             output.add(stack.pop());
         }
-        System.out.println(output);
         return output;
     }
 

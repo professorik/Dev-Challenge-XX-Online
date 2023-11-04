@@ -1,11 +1,7 @@
 package com.devchallenge.online.util;
 
 import com.devchallenge.online.dto.CellDto;
-import com.devchallenge.online.model.Cell;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.client.HttpClientErrorException;
 
 import java.io.BufferedReader;
 import java.io.DataOutputStream;

@@ -33,7 +33,7 @@ public class Parser {
             if (isFunction(token)) {
                 result.push(calculate(token, result));
                 continue;
-            }else if (isOperator(token)) {
+            } else if (isOperator(token)) {
                 if (isUnary(token)) {
                     result.push(calculate(result.pop(), token));
                 } else {
@@ -104,9 +104,9 @@ public class Parser {
 
                     output.add(stack.pop());
                 }
-                if (unary){
+                if (unary) {
                     stack.push(token + "#");
-                }else {
+                } else {
                     stack.push(token);
                 }
             } else if (token.equals("(")) {

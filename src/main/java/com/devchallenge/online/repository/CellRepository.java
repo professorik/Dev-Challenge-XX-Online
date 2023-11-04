@@ -1,6 +1,7 @@
 package com.devchallenge.online.repository;
 
-import com.devchallenge.online.model.*;
+import com.devchallenge.online.model.Cell;
+import com.devchallenge.online.model.CellId;
 import org.springframework.data.mongodb.repository.MongoRepository;
 
 import java.util.List;

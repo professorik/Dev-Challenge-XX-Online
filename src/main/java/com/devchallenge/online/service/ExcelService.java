@@ -3,9 +3,12 @@ package com.devchallenge.online.service;
 import com.devchallenge.online.dto.CellDto;
 import com.devchallenge.online.dto.exceptions.CyclicDependencyException;
 import com.devchallenge.online.dto.exceptions.NaNException;
-import com.devchallenge.online.model.*;
+import com.devchallenge.online.model.Cell;
+import com.devchallenge.online.model.CellId;
 import com.devchallenge.online.repository.CellRepository;
-import com.devchallenge.online.util.*;
+import com.devchallenge.online.util.Graph;
+import com.devchallenge.online.util.HttpManager;
+import com.devchallenge.online.util.Parser;
 import lombok.NonNull;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -155,13 +158,14 @@ public class ExcelService {
     }
 
     private void emitWebHooks(List<Cell> cells) {
-        for (Cell cell: cells) {
+        for (Cell cell : cells) {
             String url = cell.getWebhookUrl();
             if (url.isBlank()) continue;
             String json = modelMapper.map(cell, CellDto.class).toString();
             try {
                 HttpManager.post(url, json);
-            } catch (IOException ignored) {}
+            } catch (IOException ignored) {
+            }
         }
     }
 }

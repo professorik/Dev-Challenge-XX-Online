@@ -1,8 +1,9 @@
 package com.devchallenge.online.controller;
 
-import com.devchallenge.online.dto.*;
+import com.devchallenge.online.dto.CellDto;
+import com.devchallenge.online.dto.CellValueDto;
+import com.devchallenge.online.dto.WebHookDto;
 import com.devchallenge.online.model.Cell;
-import com.devchallenge.online.repository.CellRepository;
 import com.devchallenge.online.service.ExcelService;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,9 +26,9 @@ public class ExcelController {
 
 
     @PostMapping("/{sheet_id}/{cell_id}/subscribe")
-    public ResponseEntity<?> setCell(@PathVariable("sheet_id") String sheetId, @PathVariable("cell_id") String cellId, @RequestBody WebHookDto url){
+    public ResponseEntity<?> setCell(@PathVariable("sheet_id") String sheetId, @PathVariable("cell_id") String cellId, @RequestBody WebHookDto url) {
         try {
-             service.setWebHook(sheetId, cellId, url.getWebhook_url());
+            service.setWebHook(sheetId, cellId, url.getWebhook_url());
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).build();
         }
@@ -35,7 +36,7 @@ public class ExcelController {
     }
 
     @PostMapping("/{sheet_id}/{cell_id}")
-    public ResponseEntity<?> setCell(@PathVariable("sheet_id") String sheetId, @PathVariable("cell_id") String cellId, @RequestBody CellValueDto cellValue){
+    public ResponseEntity<?> setCell(@PathVariable("sheet_id") String sheetId, @PathVariable("cell_id") String cellId, @RequestBody CellValueDto cellValue) {
         CellDto result;
         try {
             result = modelMapper.map(service.setCell(sheetId, cellId, cellValue.getValue()), CellDto.class);
@@ -61,7 +62,7 @@ public class ExcelController {
             return ResponseEntity.notFound().build();
         }
         Map<String, CellDto> map = new HashMap<>();
-        for (Cell cell: cells) {
+        for (Cell cell : cells) {
             map.put(cell.getId().getCellId(), modelMapper.map(cell, CellDto.class));
         }
         return ResponseEntity.ok(map);
